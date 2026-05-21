@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Технический специалист</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; padding: 24px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: white; padding: 16px 24px; border-radius: 10px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e0e0e0; }
+        h1 { font-size: 20px; font-weight: 500; color: #111; }
+        .logout { background: #f97316; color: white; padding: 8px 18px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 500; }
+        .logout:hover { background: #ea580c; }
+        .card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 24px; border: 1px solid #e0e0e0; }
+        .card h2 { font-size: 16px; font-weight: 500; margin-bottom: 18px; color: #111; border-left: 3px solid #f97316; padding-left: 12px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
+        th { color: #666; font-weight: 500; }
+        button { background: #f97316; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; margin: 2px; }
+        .btn-green { background: #10b981; }
+        .btn-green:hover { background: #059669; }
+        .btn-red { background: #ef4444; }
+        .btn-red:hover { background: #dc2626; }
+        .repair-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .equipment-list { font-size: 12px; }
+        form { display: inline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Технический специалист</h1>
+            <a href="/logout/" class="logout">Выйти</a>
+        </div>
+
+        <div class="card">
+            <h2>Мои заявки</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Оборудование</th>
+                        <th>Пользователь</th>
+                        <th>Описание</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                    <tr>
+                        <td>{{ ticket.id }}</td>
+                        <td class="equipment-list">
+                            {% for ticket_equip in ticket.equipment_list %}
+                                {{ ticket_equip.equipment.name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>{{ ticket.Users_id.FullName }}</td>
+                        <td>{{ ticket.description }}</td>
+                        <td>{{ ticket.status }}</td>
+                        <td>
+                            {% if ticket.status == 'В процессе' %}
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="ticket_id" value="{{ ticket.id }}">
+                                    <input type="hidden" name="action" value="start_repair">
+                                    <button type="submit">На ремонте</button>
+                                </form>
+                            {% elif ticket.status == 'На ремонте' %}
+                                <div class="repair-group">
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="ticket_id" value="{{ ticket.id }}">
+                                        <input type="hidden" name="action" value="repaired">
+                                        <button type="submit" class="btn-green">Отремонтирован</button>
+                                    </form>
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="ticket_id" value="{{ ticket.id }}">
+                                        <input type="hidden" name="action" value="unrepairable">
+                                        <button type="submit" class="btn-red">Невозможно</button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6">Нет активных заявок</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
