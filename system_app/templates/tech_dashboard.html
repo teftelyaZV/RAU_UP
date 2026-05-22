@@ -5,7 +5,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; padding: 24px; }
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1400px; margin: 0 auto; }
         .header { background: white; padding: 16px 24px; border-radius: 10px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e0e0e0; }
         h1 { font-size: 20px; font-weight: 500; color: #111; }
         .logout { background: #f97316; color: white; padding: 8px 18px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 500; }
@@ -14,7 +14,7 @@
         .card h2 { font-size: 16px; font-weight: 500; margin-bottom: 18px; color: #111; border-left: 3px solid #f97316; padding-left: 12px; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
-        th { color: #666; font-weight: 500; }
+        th { color: #666; font-weight: 500; background: #f9f9f9; }
         button { background: #f97316; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; margin: 2px; }
         .btn-green { background: #10b981; }
         .btn-green:hover { background: #059669; }
@@ -39,6 +39,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Оборудование</th>
+                        <th>Аудитория</th>
                         <th>Пользователь</th>
                         <th>Описание</th>
                         <th>Статус</th>
@@ -48,15 +49,16 @@
                 <tbody>
                     {% for ticket in tickets %}
                     <tr>
-                        <td>{{ ticket.id }}</td>
+                        <td>{{ ticket.id }}</a></td>
                         <td class="equipment-list">
                             {% for ticket_equip in ticket.equipment_list %}
                                 {{ ticket_equip.equipment.name }}{% if not forloop.last %}, {% endif %}
                             {% endfor %}
-                        </td>
-                        <td>{{ ticket.Users_id.FullName }}</td>
-                        <td>{{ ticket.description }}</td>
-                        <td>{{ ticket.status }}</td>
+                        </a></td>
+                        <td>{{ ticket.audience|default:"Не указана" }}</a></a></td>
+                        <td>{{ ticket.Users_id.FullName }}</a></a></td>
+                        <td>{{ ticket.description }}</a></a></td>
+                        <td>{{ ticket.status }}</a></a></td>
                         <td>
                             {% if ticket.status == 'В процессе' %}
                                 <form method="post">
@@ -81,10 +83,10 @@
                                     </form>
                                 </div>
                             {% endif %}
-                        </td>
+                        </a></td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="6">Нет активных заявок</td></tr>
+                    <tr><td colspan="7">Нет активных заявок</a></td>
                     {% endfor %}
                 </tbody>
             </table>

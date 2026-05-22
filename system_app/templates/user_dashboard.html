@@ -13,17 +13,19 @@
         .card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 24px; border: 1px solid #e0e0e0; }
         .card h2 { font-size: 16px; font-weight: 500; margin-bottom: 18px; color: #111; border-left: 3px solid #f97316; padding-left: 12px; }
         label { font-size: 13px; font-weight: 500; color: #333; display: block; margin-bottom: 6px; }
-        select, textarea, button { width: 100%; padding: 8px 12px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 13px; font-family: inherit; }
-        select, textarea { background: #fff; }
+        select, textarea, button, input { width: 100%; padding: 8px 12px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 13px; font-family: inherit; }
+        select, textarea, input { background: #fff; }
         textarea { resize: vertical; }
         button { background: #f97316; color: white; font-weight: 500; border: none; cursor: pointer; transition: background 0.15s; margin-top: 8px; }
         button:hover { background: #ea580c; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
-        th { color: #666; font-weight: 500; }
+        th { color: #666; font-weight: 500; background: #f9f9f9; }
         .badge { background: #fff3e6; color: #f97316; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
         .equipment-list { font-size: 12px; }
         .help-text { font-size: 11px; color: #666; margin-top: 4px; }
+        .row-group { display: flex; gap: 12px; margin-bottom: 12px; }
+        .row-group > div { flex: 1; }
     </style>
 </head>
 <body>
@@ -37,13 +39,23 @@
             <h2>Создать заявку</h2>
             <form method="post">
                 {% csrf_token %}
-                <label>Оборудование (можно выбрать несколько, зажмите Ctrl)</label>
-                <select name="equipment_ids" multiple required size="5">
-                    {% for eq in equipment_list %}
-                    <option value="{{ eq.id }}">{{ eq.name }} ({{ eq.status.status_name }})</option>
-                    {% endfor %}
-                </select>
-                <div class="help-text">Для выбора нескольких элементов зажмите Ctrl (Cmd на Mac)</div>
+                <div class="row-group">
+                    <div>
+                        <label>Номер оборудования</label>
+                        <select name="equipment_ids" multiple required size="4">
+                            <option value="">Выберите оборудование</option>
+                            {% for eq in equipment_list %}
+                            <option value="{{ eq.id }}">{{ eq.name }} ({{ eq.status.status_name }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="help-text">Для выбора нескольких зажмите Ctrl</div>
+                    </div>
+                    <div>
+                        <label>Аудитория</label>
+                        <input type="text" name="audience" placeholder="Например: Ауд. 101, Каб. 203" required>
+                        <div class="help-text">Укажите, где находится оборудование</div>
+                    </div>
+                </div>
                 <label>Описание проблемы</label>
                 <textarea name="description" rows="3" required></textarea>
                 <button type="submit">Отправить заявку</button>
@@ -57,6 +69,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Оборудование</th>
+                        <th>Аудитория</th>
                         <th>Описание</th>
                         <th>Техник</th>
                         <th>Статус</th>
@@ -71,14 +84,15 @@
                             {% for ticket_equip in ticket.equipment_list %}
                                 {{ ticket_equip.equipment.name }}{% if not forloop.last %}, {% endif %}
                             {% endfor %}
-                        </td>
-                        <td>{{ ticket.description }}</td>
-                        <td>{{ ticket.TechSpecialists_id.FullName|default:"Не назначен" }}</td>
-                        <td><span class="badge">{{ ticket.status }}</span></td>
-                        <td>{{ ticket.date_added|date:"d.m.Y" }}</td>
+                        </a></td>
+                        <td>{{ ticket.audience|default:"Не указана" }}</a></td>
+                        <td>{{ ticket.description }}</a></td>
+                        <td>{{ ticket.TechSpecialists_id.FullName|default:"Не назначен" }}</a></td>
+                        <td><span class="badge">{{ ticket.status }}</span></a></td>
+                        <td>{{ ticket.date_added|date:"d.m.Y H:i" }}</a></td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="6">Нет заявок</td></tr>
+                    <tr><td colspan="7">Нет заявок</a></td>
                     {% endfor %}
                 </tbody>
             </table>

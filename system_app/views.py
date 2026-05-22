@@ -8,7 +8,6 @@ def login_page(request):
         login = request.POST.get('login')
         password = request.POST.get('password')
 
-        # Сначала проверяем среди администраторов
         try:
             admin = Administrators.objects.get(login=login, password=password)
             request.session['user_id'] = admin.id
@@ -17,7 +16,6 @@ def login_page(request):
         except Administrators.DoesNotExist:
             pass
 
-        # Затем проверяем среди технических специалистов
         try:
             tech = TechSpecialists.objects.get(login=login, password=password)
             request.session['user_id'] = tech.id
@@ -26,7 +24,6 @@ def login_page(request):
         except TechSpecialists.DoesNotExist:
             pass
 
-        # Затем проверяем среди обычных пользователей
         try:
             user = Users.objects.get(login=login, password=password)
             request.session['user_id'] = user.id
@@ -35,7 +32,6 @@ def login_page(request):
         except Users.DoesNotExist:
             pass
 
-        # Если никто не найден
         return render(request, 'login.html', {'error': 'Неверный логин или пароль'})
 
     return render(request, 'login.html')
@@ -48,8 +44,9 @@ def user_dashboard(request):
     if request.method == 'POST':
         equipment_ids = request.POST.getlist('equipment_ids')
         description = request.POST.get('description')
+        audience = request.POST.get('audience')
 
-        if equipment_ids:
+        if equipment_ids and equipment_ids[0]:
             ticket = Tickets()
             ticket.Users_id_id = request.session['user_id']
             ticket.TechSpecialists_id = None
@@ -69,23 +66,29 @@ def user_dashboard(request):
                     ticket.Administrators_id_id = admin.id
 
             ticket.description = description
+            ticket.audience = audience
             ticket.status = 'Новая'
             ticket.date_added = datetime.now()
             ticket.save()
 
             for equipment_id in equipment_ids:
-                try:
-                    broken_status = EquipmentStatus.objects.get(id=2)
-                    equipment = Equipments.objects.get(id=equipment_id)
-                    equipment.status = broken_status
-                    equipment.save()
+                if equipment_id:
+                    try:
+                        equipment = Equipments.objects.get(id=equipment_id)
+                        # Статус "Не исправно" (ID=3)
+                        try:
+                            broken_status = EquipmentStatus.objects.get(id=3)
+                            equipment.status = broken_status
+                            equipment.save()
+                        except:
+                            pass
 
-                    TicketEquipment.objects.create(
-                        ticket=ticket,
-                        equipment=equipment
-                    )
-                except Exception as e:
-                    print(f"Ошибка при обработке оборудования {equipment_id}: {e}")
+                        TicketEquipment.objects.create(
+                            ticket=ticket,
+                            equipment=equipment
+                        )
+                    except:
+                        pass
 
     my_tickets = Tickets.objects.filter(Users_id_id=request.session['user_id']).order_by('-date_added')
 
@@ -142,15 +145,29 @@ def tech_dashboard(request):
 
             if action == 'start_repair':
                 ticket.status = 'На ремонте'
+                ticket.save()
+
+                # Меняем статус оборудования на "На ремонте" (ID=2)
+                for ticket_equipment in ticket.equipment_items.all():
+                    equipment = ticket_equipment.equipment
+                    try:
+                        repair_status = EquipmentStatus.objects.get(id=2)
+                        equipment.status = repair_status
+                        equipment.save()
+                    except:
+                        pass
 
             elif action == 'repaired':
                 ticket.status = 'Отремонтирован'
                 ticket.date_closed = datetime.now()
+                ticket.save()
+
+                # Меняем статус оборудования на "Исправно" (ID=1)
                 for ticket_equipment in ticket.equipment_items.all():
                     equipment = ticket_equipment.equipment
                     try:
-                        repaired_status = EquipmentStatus.objects.get(id=4)
-                        equipment.status = repaired_status
+                        working_status = EquipmentStatus.objects.get(id=1)
+                        equipment.status = working_status
                         equipment.save()
                     except:
                         pass
@@ -158,16 +175,17 @@ def tech_dashboard(request):
             elif action == 'unrepairable':
                 ticket.status = 'Невозможно отремонтировать'
                 ticket.date_closed = datetime.now()
+                ticket.save()
+
+                # Меняем статус оборудования на "Не исправно" (ID=3)
                 for ticket_equipment in ticket.equipment_items.all():
                     equipment = ticket_equipment.equipment
                     try:
-                        broken_status = EquipmentStatus.objects.get(id=5)
+                        broken_status = EquipmentStatus.objects.get(id=3)
                         equipment.status = broken_status
                         equipment.save()
                     except:
                         pass
-
-            ticket.save()
 
     my_tickets = Tickets.objects.filter(
         TechSpecialists_id=request.session['user_id']

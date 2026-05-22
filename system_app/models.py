@@ -49,6 +49,7 @@ class Tickets(models.Model):
     status = models.CharField(max_length=100)
     date_added = models.DateTimeField()
     date_closed = models.DateTimeField(null=True, blank=True)
+    audience = models.CharField(max_length=100, blank=True, null=True)
 
 
 class TicketEquipment(models.Model):
