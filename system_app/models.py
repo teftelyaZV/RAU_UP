@@ -5,7 +5,7 @@ class Roles(models.Model):
     id = models.AutoField(primary_key=True)
     role_name = models.CharField(max_length=100)
 
-
+#ZV
 class Users(models.Model):
     id = models.AutoField(primary_key=True)
     FullName = models.CharField(max_length=100)
@@ -16,7 +16,7 @@ class Users(models.Model):
 
 class EquipmentStatus(models.Model):
     id = models.AutoField(primary_key=True)
-    status_name = models.CharField(max_length=100)
+    status_name = models.CharField(max_length=50)
 
 
 class Equipments(models.Model):

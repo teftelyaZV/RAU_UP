@@ -32,7 +32,7 @@ def login_page(request):
         except Users.DoesNotExist:
             pass
 
-        return render(request, 'login.html', {'error': 'Неверный логин или пароль'})
+        return render(request, 'login.html', {'error': 'Неверный login или пароль'})
 
     return render(request, 'login.html')
 
